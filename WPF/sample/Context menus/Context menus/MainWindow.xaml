@@ -1,0 +1,19 @@
+﻿<Window x:Class="Context_menus.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+       
+        <Button Content="Right Click me" HorizontalAlignment="Left" Margin="216,70,0,0" VerticalAlignment="Top" Width="94">
+            <Button.ContextMenu>
+                <ContextMenu>
+                <MenuItem Header="Menu item 1" Click="MenuItem_Click"/>
+                <MenuItem Header="Menu item 2" Click="MenuItem_Click_1"/>
+                <Separator />
+                <MenuItem Header="Menu item 3" Click="MenuItem_Click_2"/>
+                </ContextMenu>
+            </Button.ContextMenu>
+        </Button>
+                
+    </Grid>
+</Window>
