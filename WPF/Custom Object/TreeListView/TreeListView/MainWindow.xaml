@@ -1,0 +1,67 @@
+﻿<Window x:Class="TreeListView.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="437.229" Width="900.042">
+    <Grid>
+
+
+        <StackPanel HorizontalAlignment="Left" Height="335" VerticalAlignment="Top" Width="716" Margin="100,59,0,0">
+            <StackPanel.Resources>
+                <HierarchicalDataTemplate x:Key="ChildTemplate">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="{Binding Path=Name}" TextAlignment="Left" Padding="2" Width="100"/>
+                        <Grid Width="100" Height="20" Grid.Column="1">
+                            <ProgressBar Width="90" Value="{Binding Path=DeltaLimitState,Mode=OneWay}"/>
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Path=Delta}"/>
+                        </Grid>
+                        <Grid Width="100" Height="20" Grid.Column="2">
+                            <ProgressBar Width="90" Value="{Binding Path=NotionalLimitState,Mode=OneWay}"/>
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Path=Notional}"/>
+                        </Grid>
+                        <Grid Width="100" Height="20" Grid.Column="3">
+                            <ProgressBar Width="90" Value="{Binding Path=OutstandSellLimitState,Mode=OneWay}"/>
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Path=OutstandSell}"/>
+                        </Grid>
+                        <Grid Width="100" Height="20" Grid.Column="4">
+                            <ProgressBar Width="90" Value="{Binding Path=OutstandBuyLimitState,Mode=OneWay}"/>
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Path=OutstandBuy}"/>
+                        </Grid>
+                    </Grid>
+                </HierarchicalDataTemplate>
+
+                <HierarchicalDataTemplate x:Key="NameTemplate" ItemsSource="{Binding Path=ChildTopics}" ItemTemplate="{StaticResource ChildTemplate}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="{Binding Path=Name}" Padding="2"   TextAlignment="Left" Width="110"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Path=Delta}"  TextAlignment="Right" Width="100"/>
+                        <TextBlock Grid.Column="2" Text="{Binding Path=Notional}" TextAlignment="Right" Width="100"/>
+                        <TextBlock Grid.Column="3" Text="{Binding Path=OutstandBuy}" TextAlignment="Right" Width="100"/>
+                        <TextBlock Grid.Column="4" Text="{Binding Path=OutstandSell}" TextAlignment="Right" Width="100"/>
+                    </Grid>
+                </HierarchicalDataTemplate>
+            </StackPanel.Resources>
+            <TreeView Height="300" ItemsSource="{Binding}" SelectedItemChanged="myTreeView_SelectedItemChanged" ItemTemplate="{StaticResource NameTemplate}" x:Name="myTreeView" Margin="42,0,43,0" />
+
+
+        </StackPanel>
+        <Label Content="Bought" HorizontalAlignment="Left" Margin="344,36,0,0" VerticalAlignment="Top" Height="23"/>
+        <Label Content="Sold" HorizontalAlignment="Left" Margin="447,36,0,0" VerticalAlignment="Top" Height="23"/>
+        <Label Content="Outstand Buy" HorizontalAlignment="Left" Margin="527,36,0,0" VerticalAlignment="Top" Height="23"/>
+        <Label Content="Outstand Sell" HorizontalAlignment="Left" Margin="637,36,0,0" VerticalAlignment="Top" Height="23"/>
+    </Grid>
+</Window>
