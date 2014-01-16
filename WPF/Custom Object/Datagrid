@@ -1,0 +1,250 @@
+MainWindow.xaml
+
+<Window x:Class="Akuna.PriceMonitor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="337" Width="477" Closing="Window_Closing">
+    <Window.Resources>
+        <SolidColorBrush x:Key="CustomBlue" Color="#365FB7" />
+        <SolidColorBrush x:Key="CustomRed" Color="#D3151B" />
+        <SolidColorBrush x:Key="CustomGrey" Color="#ABABAB" />
+    </Window.Resources>
+    <Grid>
+        <DataGrid x:Name="datagrid"  HorizontalAlignment="Left" IsReadOnly="True" Margin="20,53,0,0" AutoGenerateColumns="False" VerticalAlignment="Top" Height="225" Width="386" ItemsSource="{Binding Instruments}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Instrument" Binding="{Binding Path=InstrumentID}"/>
+                <DataGridTextColumn Header="Bid Price" Binding="{Binding Path=ObsBidPx}">
+                <DataGridTextColumn.ElementStyle>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="Background" Value="White" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding DeltaBidPx}" Value="1">
+                                    <Setter Property="Background" Value="{DynamicResource CustomBlue}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource CustomGrey}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding DeltaBidPx}" Value="-1">
+                                    <Setter Property="Background" Value="{DynamicResource CustomRed}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource CustomGrey}" />
+                            </DataTrigger>
+                                <DataTrigger Binding="{Binding DeltaBidPx}" Value="0">
+                                <Setter Property="Background" Value="White" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Bid qty" Binding="{Binding Path=BidQty}"/>
+                <DataGridTextColumn Header="Ask Price" Binding="{Binding Path=ObsAskPx}">
+                <DataGridTextColumn.ElementStyle>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="Background" Value="White" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding DeltaAskPx}" Value="1">
+                                    <Setter Property="Background" Value="{DynamicResource CustomBlue}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding DeltaAskPx}" Value="-1">
+                                    <Setter Property="Background" Value="{DynamicResource CustomRed}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding DeltaAskPx}" Value="0">
+                                <Setter Property="Background" Value="White" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Ask qty" Binding="{Binding Path=AskQty}"/>
+                <DataGridTextColumn Header="Volume" Binding="{Binding Path=ObsVolume}" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <ToggleButton Content="Start/Stop" HorizontalAlignment="Left" Checked="Button_Click_1" Unchecked="Button_Click_2" Margin="345,10,0,0" VerticalAlignment="Top"/>
+    </Grid>
+</Window>
+
+MainWindow.xaml.cs
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace Akuna.PriceMonitor
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        public MainWindow()
+        {
+            InitializeComponent();
+            DataContext = Model.UniqueInstance;
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            Model.UniqueInstance.StartPriceService();
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            Model.UniqueInstance.StopPriceService();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Model.UniqueInstance.CloseApp();
+        }
+    }
+}
+
+Model.cs
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Akuna.PriceService;
+using System.Collections.ObjectModel;
+using System.Windows.Threading;
+
+namespace Akuna.PriceMonitor
+{
+    public sealed class Model
+    {
+        static readonly Model instance = new Model();
+        public static Model UniqueInstance { get { return instance; } }
+
+        private int collectionSize = 10;
+        private ObservableCollection<Prices> instruments;
+        private RandomWalkPriceService priceService;
+
+        public ObservableCollection<Prices> Instruments { get { return instruments; } set { instruments = value; } }
+
+        private Model()
+        {
+            instruments = new ObservableCollection<Prices>();
+            InitializeCollection();
+            priceService = new RandomWalkPriceService();
+            priceService.NewPricesArrived += PriceUpdateHandler;
+        }
+
+        private void InitializeCollection()
+        {
+            for (int i = 0; i < collectionSize; i++)
+                Instruments.Add(new Prices());
+        }
+
+        internal void StartPriceService()
+        {
+            priceService.Start();
+        }
+
+        internal void StopPriceService()
+        {
+            if(priceService.IsStarted)
+                priceService.Stop();
+        }
+
+        internal void CloseApp()
+        {
+            StopPriceService();
+            System.Windows.Application.Current.Dispatcher.InvokeShutdown();
+        }
+
+        private void PriceUpdateHandler(IPriceService sender, uint instrumentID, IPrices prices)
+        {
+            Prices holdPrice = Instruments[(int)instrumentID];
+
+            System.Windows.Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)delegate()
+            {
+                Instruments[(int)instrumentID] = new Prices(prices, holdPrice,instrumentID); 
+            });
+        }
+    }
+}
+
+
+
+Prices.cs
+
+
+using Akuna.PriceService;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Akuna.PriceMonitor
+{
+    public class Prices : IPrices
+    {
+        public Prices()
+        {
+            BidPx = 0;
+            BidQty = 0;
+            AskPx = 0;
+            AskQty = 0;
+            Volume = 0;
+        }
+
+        public Prices(IPrices newPrices,Prices holdPrice,uint id)
+        {
+            InstrumentID = "Instrument " + id ;
+            BidPx = newPrices.BidPx;
+            BidQty = newPrices.BidQty;
+            AskPx = newPrices.AskPx;
+            AskQty = newPrices.AskQty;
+            Volume = newPrices.Volume;
+
+            DeltaBidPx = ComputeDelta(holdPrice.BidPx, newPrices.BidPx);
+            DeltaBidQty = ComputeDelta(holdPrice.BidQty, newPrices.BidQty);
+            DeltaAskPx = ComputeDelta(holdPrice.AskPx, newPrices.AskPx);
+            DeltaAskQty = ComputeDelta(holdPrice.AskQty, newPrices.AskQty);
+            DeltaVolume = ComputeDelta(holdPrice.Volume, newPrices.Volume);
+        }
+        
+        public double BidPx { get; set; }
+        public uint BidQty { get; set; }
+        public double AskPx { get; set; }
+        public uint AskQty { get; set; }
+        public uint Volume { get; set; }
+
+        public string InstrumentID { get; set; }
+        public string ObsBidPx { get { return BidPx.ToString("N2"); } }
+        public string ObsAskPx { get { return AskPx.ToString("N2"); } }
+        public string ObsVolume { get { return Volume.ToString("N0"); } } 
+
+        public int DeltaBidPx { get; set; }
+        public int DeltaBidQty { get; set; }
+        public int DeltaAskPx { get; set; }
+        public int DeltaAskQty { get; set; }
+        public int DeltaVolume { get; set; }
+
+
+        private int ComputeDelta(double holdValue,double newValue)
+        {
+            if (newValue > holdValue)
+                return 1;
+            else if (newValue < holdValue)
+                return -1;
+            else
+                return 0;
+        }
+    }
+}
+
+
+
+
