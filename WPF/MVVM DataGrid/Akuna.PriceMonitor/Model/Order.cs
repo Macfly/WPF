@@ -16,15 +16,12 @@ namespace Akuna.PriceMonitor.Model
 
         public int Quantity { get; set; }
 
-        public Order(string price,string quantity, bool orderSide )
+        public Order(double price,int quantity, bool orderSide )
         {
-            Price = double.Parse(price);
-            Quantity = int.Parse(quantity);
+            Price = price;
+            Quantity = quantity;
 
-            if (orderSide == bid)
-                Side = SideType.bid;
-            else
-                Side = SideType.ask;
+            Side = (orderSide == bid) ? SideType.bid : SideType.ask;
         }
     }
 }

@@ -24,6 +24,7 @@ namespace Akuna.PriceMonitor.ViewModel
         private int collectionSize = 10;
         private RandomWalkPriceService priceService;
         private int period = 1500000;
+        public string ObsPeriod { get { return (period / 10000) + "ms"; } }
         private TimeSpan refreshTime; 
         public Instrument[] Instruments {get;set;}
         bool isStarted;
@@ -59,6 +60,7 @@ namespace Akuna.PriceMonitor.ViewModel
                 period = value;
                 UpdateRefreshPeriod();
                 OnPropertyChanged("Period");
+                OnPropertyChanged("ObsPeriod");
             }
         }
 
@@ -182,7 +184,7 @@ namespace Akuna.PriceMonitor.ViewModel
         }
 
         internal void CloseApp(object sender, CancelEventArgs e)
-        {
+        {   
             StopPriceService();
             System.Windows.Application.Current.Dispatcher.InvokeShutdown();
         }
@@ -197,8 +199,33 @@ namespace Akuna.PriceMonitor.ViewModel
 
         public void SendOrder(object obj)
         {
-            int instrumentID = int.Parse(SelectedInstrument);
-            Order myOrder = new Order(OrderPrice, OrderQuantity, OrderSide);
+            if(string.IsNullOrEmpty(SelectedInstrument))
+            {
+                MessageBox.Show("Please define a Instrument Nb from: 0 to: " + collectionSize);
+                return;
+            }
+            int instrumentID;
+            if(!int.TryParse(SelectedInstrument,out instrumentID) || instrumentID > collectionSize - 1)
+            {
+                MessageBox.Show("Instrument nb must be a number inferior to: " + collectionSize);
+                return;
+            }
+
+            double price;
+            if(string.IsNullOrEmpty(OrderPrice) ||!double.TryParse(OrderPrice,out price))
+            {
+                MessageBox.Show("Price must be a number");
+                return;
+            }
+
+            int quantity;
+            if (string.IsNullOrEmpty(OrderQuantity) || !int.TryParse(OrderQuantity, out quantity))
+            {
+                MessageBox.Show("Quantity must be an integer");
+                return;
+            }
+
+            Order myOrder = new Order(price, quantity, OrderSide);
 
             System.Windows.Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)delegate()
             {

@@ -115,12 +115,14 @@ namespace Akuna.PriceMonitor.Model
 
         private int ComputeDelta(double holdValue, double newValue)
         {
-            if (newValue > holdValue)
-                return 1;
-            else if (newValue < holdValue)
-                return -1;
-            else
-                return 0;
+            //if (newValue > holdValue)
+            //    return 1;
+            //else if (newValue < holdValue)
+            //    return -1;
+            //else
+            //    return 0;
+
+            return (newValue > holdValue) ? 1 : (newValue < holdValue) ? -1 : 0;
         }
 
         internal void UpdatePrices(IPrices newPrices)

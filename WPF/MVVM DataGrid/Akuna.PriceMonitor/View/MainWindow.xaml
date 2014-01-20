@@ -61,7 +61,7 @@
             <StackPanel>
                 <DockPanel>
                     <Label Content="Refresh Period:"/>
-                    <Label Content="{Binding Period, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
+                    <Label Content="{Binding ObsPeriod}" />
                 </DockPanel>
                 <Slider Minimum="1500000" Maximum="20000000" Value="{Binding Period, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
                 <ToggleButton Content="Start/Stop" Margin="10" IsChecked="{Binding IsStarted, Mode=TwoWay}"/>
