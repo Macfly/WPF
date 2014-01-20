@@ -7,15 +7,16 @@ namespace Akuna.PriceMonitor.Model
 {
     class Order
     {
+        #region parameters
         const bool bid = true;
         const bool ask = false;
         public double Price { get; set; }
         public enum SideType { bid, ask };
-
         public SideType Side { get; set; }
-
         public int Quantity { get; set; }
+        #endregion
 
+        #region constructor
         public Order(double price,int quantity, bool orderSide )
         {
             Price = price;
@@ -23,5 +24,6 @@ namespace Akuna.PriceMonitor.Model
 
             Side = (orderSide == bid) ? SideType.bid : SideType.ask;
         }
+        #endregion
     }
 }

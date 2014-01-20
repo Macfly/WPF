@@ -25,8 +25,8 @@ namespace Akuna.PriceMonitor.ViewModel
         private RandomWalkPriceService priceService;
         private int period = 1500000;
         public string ObsPeriod { get { return (period / 10000) + "ms"; } }
-        private TimeSpan refreshTime; 
-        public Instrument[] Instruments {get;set;}
+        private TimeSpan refreshTime;
+        public Instrument[] Instruments { get; set; }
         bool isStarted;
         bool testModeActivated = false;
         string selectedInstrument;
@@ -55,8 +55,8 @@ namespace Akuna.PriceMonitor.ViewModel
         public int Period
         {
             get { return period; }
-            set 
-            { 
+            set
+            {
                 period = value;
                 UpdateRefreshPeriod();
                 OnPropertyChanged("Period");
@@ -67,19 +67,19 @@ namespace Akuna.PriceMonitor.ViewModel
         public bool TestModeActivated
         {
             get { return testModeActivated; }
-            set 
-            { 
+            set
+            {
                 testModeActivated = value;
                 InitializeTestMode();
                 OnPropertyChanged("TestModeActivated");
             }
         }
-        
+
         public string SelectedInstrument
         {
             get { return selectedInstrument; }
-            set 
-            { 
+            set
+            {
                 selectedInstrument = value;
                 OnPropertyChanged("SelectedInstrument");
             }
@@ -88,8 +88,8 @@ namespace Akuna.PriceMonitor.ViewModel
         public bool OrderSide
         {
             get { return orderSide; }
-            set 
-            { 
+            set
+            {
                 orderSide = value;
                 OnPropertyChanged("OrderSide");
             }
@@ -98,8 +98,8 @@ namespace Akuna.PriceMonitor.ViewModel
         public string OrderPrice
         {
             get { return orderPrice; }
-            set 
-            { 
+            set
+            {
                 orderPrice = value;
                 OnPropertyChanged("OrderPrice");
             }
@@ -108,8 +108,8 @@ namespace Akuna.PriceMonitor.ViewModel
         public string OrderQuantity
         {
             get { return orderQuantity; }
-            set 
-            { 
+            set
+            {
                 orderQuantity = value;
                 OnPropertyChanged("OrderQuantity");
             }
@@ -131,8 +131,8 @@ namespace Akuna.PriceMonitor.ViewModel
         #region Constructor
         public MonitorViewModel()
         {
-            SendCommand=new RelayCommand(new Action<object>(SendOrder));
-            refreshTime = new TimeSpan(Period); 
+            SendCommand = new RelayCommand(new Action<object>(SendOrder));
+            refreshTime = new TimeSpan(Period);
             Application.Current.MainWindow.Closing += new CancelEventHandler(CloseApp);
             Instruments = new Instrument[collectionSize];
             InitializeCollection();
@@ -157,7 +157,7 @@ namespace Akuna.PriceMonitor.ViewModel
         private void InitializeCollection()
         {
             for (int i = 0; i < collectionSize; i++)
-                Instruments[i] = new Instrument(i,refreshTime);
+                Instruments[i] = new Instrument(i, refreshTime);
         }
 
         private void InitializeTestMode()
@@ -165,26 +165,27 @@ namespace Akuna.PriceMonitor.ViewModel
             StopPriceService();
             System.Windows.Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)delegate()
             {
-                // called tow times to reset the background color
+                // Clean the values of the dataGrid 
                 CleanCollection();
+                // reset the background color of the dataGrid
                 CleanCollection();
             });
         }
 
         internal void StartPriceService()
         {
-            if(!TestModeActivated)
-            priceService.Start();
+            if (!TestModeActivated)
+                priceService.Start();
         }
 
         internal void StopPriceService()
         {
-            if(priceService.IsStarted)
+            if (priceService.IsStarted)
                 priceService.Stop();
         }
 
         internal void CloseApp(object sender, CancelEventArgs e)
-        {   
+        {
             StopPriceService();
             System.Windows.Application.Current.Dispatcher.InvokeShutdown();
         }
@@ -193,26 +194,26 @@ namespace Akuna.PriceMonitor.ViewModel
         {
             System.Windows.Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)delegate()
             {
-                    Instruments[(int)instrumentID].UpdatePrices(prices);
+                Instruments[(int)instrumentID].UpdatePrices(prices);
             });
         }
 
         public void SendOrder(object obj)
         {
-            if(string.IsNullOrEmpty(SelectedInstrument))
+            if (string.IsNullOrEmpty(SelectedInstrument))
             {
                 MessageBox.Show("Please define a Instrument Nb from: 0 to: " + collectionSize);
                 return;
             }
             int instrumentID;
-            if(!int.TryParse(SelectedInstrument,out instrumentID) || instrumentID > collectionSize - 1)
+            if (!int.TryParse(SelectedInstrument, out instrumentID) || instrumentID > collectionSize - 1)
             {
                 MessageBox.Show("Instrument nb must be a number inferior to: " + collectionSize);
                 return;
             }
 
             double price;
-            if(string.IsNullOrEmpty(OrderPrice) ||!double.TryParse(OrderPrice,out price))
+            if (string.IsNullOrEmpty(OrderPrice) || !double.TryParse(OrderPrice, out price))
             {
                 MessageBox.Show("Price must be a number");
                 return;
@@ -243,32 +244,32 @@ namespace Akuna.PriceMonitor.ViewModel
             }
         }
         #endregion
-      
+
     }
 
-      class RelayCommand : ICommand
+    class RelayCommand : ICommand
+    {
+        private Action<object> _action;
+
+        public RelayCommand(Action<object> action)
         {
-            private Action<object> _action;
-
-            public RelayCommand(Action<object> action)
-            {
-                _action = action;
-            }
-
-            #region ICommand Members
-
-            public bool CanExecute(object parameter)
-            {
-                return true;
-            }
-
-            public event EventHandler CanExecuteChanged;
-
-            public void Execute(object parameter)
-            {
-                _action(parameter);
-            }
-
-            #endregion
+            _action = action;
         }
+
+        #region ICommand Members
+
+        public bool CanExecute(object parameter)
+        {
+            return true;
+        }
+
+        public event EventHandler CanExecuteChanged;
+
+        public void Execute(object parameter)
+        {
+            _action(parameter);
+        }
+
+        #endregion
+    }
 }

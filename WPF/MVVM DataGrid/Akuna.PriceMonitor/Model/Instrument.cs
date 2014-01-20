@@ -19,7 +19,7 @@ namespace Akuna.PriceMonitor.Model
         private uint volume;
 
         private Stopwatch stopwatch;
-        internal TimeSpan RefreshPeriod {get; set;} 
+        internal TimeSpan RefreshPeriod { get; set; }
 
         public int DeltaBidPx { get; set; }
         public int DeltaAskPx { get; set; }
@@ -42,7 +42,7 @@ namespace Akuna.PriceMonitor.Model
                 OnPropertyChanged("InstrumentID");
             }
         }
-       
+
 
         public double BidPx
         {
@@ -115,13 +115,6 @@ namespace Akuna.PriceMonitor.Model
 
         private int ComputeDelta(double holdValue, double newValue)
         {
-            //if (newValue > holdValue)
-            //    return 1;
-            //else if (newValue < holdValue)
-            //    return -1;
-            //else
-            //    return 0;
-
             return (newValue > holdValue) ? 1 : (newValue < holdValue) ? -1 : 0;
         }
 
@@ -144,15 +137,13 @@ namespace Akuna.PriceMonitor.Model
 
         internal void UpdatePrices(Order newOrder)
         {
-
-
             if (newOrder.Side == Order.SideType.ask)
             {
                 DeltaAskPx = ComputeDelta(AskPx, newOrder.Price);
                 AskPx = newOrder.Price;
                 AskQty = (uint)newOrder.Quantity;
             }
-            else if(newOrder.Side == Order.SideType.bid)
+            else if (newOrder.Side == Order.SideType.bid)
             {
                 DeltaBidPx = ComputeDelta(BidPx, newOrder.Price);
                 BidPx = newOrder.Price;
@@ -160,7 +151,6 @@ namespace Akuna.PriceMonitor.Model
             }
 
             Volume += (uint)newOrder.Quantity;
-                
         }
 
         internal void ResetData()

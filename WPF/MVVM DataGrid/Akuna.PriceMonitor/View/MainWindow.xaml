@@ -66,9 +66,6 @@
                 <Slider Minimum="1500000" Maximum="20000000" Value="{Binding Period, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
                 <ToggleButton Content="Start/Stop" Margin="10" IsChecked="{Binding IsStarted, Mode=TwoWay}"/>
                 <CheckBox Name="testMode" Content="Test Mode" IsChecked="{Binding TestModeActivated, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
-
-
-
             </StackPanel>
         </GroupBox>
         <GroupBox Header="Deal Booker" Visibility="{Binding TestModeActivated, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Left" Margin="416,143,0,0" VerticalAlignment="Top" Height="167" Width="160">
